@@ -1,27 +1,27 @@
 {
-    "name": "server",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
-        "build": "tsc -p .",
-        "start": "node dist/index.js",
-        "lint": "eslint . --ext .ts",
-        "check-types": "tsc --noEmit"
-    },
-    "devDependencies": {
-        "tsc-watch": "^6.2.1",
-        "typescript": "^5.7.2"
-    },
-    "dependencies": {
-        "@aws-sdk/client-s3": "^3.717.0",
-        "@aws-sdk/s3-request-presigner": "^3.717.0",
-        "@prisma/client": "^6.1.0",
-        "@types/cors": "^2.8.17",
-        "@types/express": "^4.17.21",
-        "cors": "^2.8.5",
-        "dotenv": "^16.4.7",
-        "express": "4.19.2",
-        "prisma": "^6.1.0"
-    }
+  "name": "server",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node init && tsc-watch --onSuccess \"node dist/index.js\"",
+    "build": "node init && tsc -p .",
+    "start": "node init && node dist/index.js",
+    "lint": "eslint . --ext .ts",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsc-watch": "^6.2.1",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.717.0",
+    "@aws-sdk/s3-request-presigner": "^3.717.0",
+    "@prisma/client": "^6.1.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "4.19.2",
+    "prisma": "^6.1.0"
+  }
 }

@@ -1,5 +1,15 @@
 import { S3Client, CreateMultipartUploadCommand, CompleteMultipartUploadCommand, PutObjectCommand, UploadPartCommand, ObjectCannedACL } from "@aws-sdk/client-s3";
   import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+  import dotenv from "dotenv";
+
+  dotenv.config();
+
+
+  console.log(process.env.AWS_ACCESS_KEY_ID);
+  console.log(process.env.AWS_SECRET_ACCESS_KEY);
+  console.log(process.env.AWS_S3_BUCKET_NAME);
+  console.log(process.env.S3_ENDPOINT);
+
   
   // Initialize AWS S3 client
   const s3Client = new S3Client({
@@ -8,6 +18,7 @@ import { S3Client, CreateMultipartUploadCommand, CompleteMultipartUploadCommand,
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     },
+    endpoint: process.env.S3_ENDPOINT, // Optional, only if you're using a custom S3-compatible service
   });
   
   // Check if API is live
@@ -21,12 +32,11 @@ import { S3Client, CreateMultipartUploadCommand, CompleteMultipartUploadCommand,
       const { fileName } = req.body;
   
       const params = {
-        Bucket: process.env.,
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: fileName,
         expires: 100,
         ACL: ObjectCannedACL.bucket_owner_full_control,
       };
-  
       const url = await getSignedUrl(s3Client, new PutObjectCommand(params), {
         expiresIn: 60, // 60 seconds
       });
@@ -96,26 +106,36 @@ import { S3Client, CreateMultipartUploadCommand, CompleteMultipartUploadCommand,
     }
   };
   
-  // Complete multipart upload
   export const completeMultipartUpload = async (req, res) => {
     try {
+      // console.log("Request body:", req.body);
+  
       const { fileName, uploadId, parts } = req.body;
+  
+      // Ensure the `parts` array is sorted by `PartNumber`
+      const sortedParts = parts
+        .sort((a, b) => a.PartNumber - b.PartNumber) // Sort by PartNumber in ascending order
+        .map((part) => ({
+          ETag: part.ETag,  // Extract ETag correctly
+          PartNumber: part.PartNumber,  // Extract PartNumber correctly
+        }));
+  
+      console.log("Sorted parts:", sortedParts); // Debug sorted parts
   
       const params = {
         Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: fileName,
         UploadId: uploadId,
         MultipartUpload: {
-          Parts: parts.map((part, index) => ({
-            ETag: part.etag,
-            PartNumber: index + 1,
-          })),
+          Parts: sortedParts, // Use the sorted and mapped parts
         },
       };
   
+      console.log("Params for CompleteMultipartUploadCommand:", params);
       const command = new CompleteMultipartUploadCommand(params);
       const data = await s3Client.send(command);
   
+      console.log("Response from CompleteMultipartUploadCommand:", data);
       res.status(200).json({ fileData: data });
     } catch (error) {
       console.error("Error completing multipart upload:", error);
